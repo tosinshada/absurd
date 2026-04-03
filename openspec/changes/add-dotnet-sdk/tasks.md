@@ -42,27 +42,27 @@
 
 ## 6. Core Client (`Absurd` class)
 
-- [ ] 6.1 Create `Absurd.cs` constructor — accept `AbsurdOptions`, resolve connection string from env, create `NpgsqlDataSource` if needed, track ownership
-- [ ] 6.2 Implement `SpawnAsync<TParams>(taskName, params, SpawnOptions?)` — call spawn stored procedure, apply `BeforeSpawn` hook, return `SpawnResult`
-- [ ] 6.3 Implement `FetchTaskResultAsync(taskId)` → `TaskSnapshot?`
-- [ ] 6.4 Implement `AwaitTaskResultAsync(taskId, options?)` — polling loop with configurable interval; throw `TimeoutException` on expiry
-- [ ] 6.5 Implement `EmitEventAsync(eventName, payload?, queueName?)` — queue-level event emission
-- [ ] 6.6 Implement `CancelTaskAsync(taskId, queueName?)`
-- [ ] 6.7 Implement `RetryTaskAsync(taskId, options?)` — in-place and new-task modes
-- [ ] 6.8 Implement `CreateQueueAsync(name)`, `DropQueueAsync(name)`, `ListQueuesAsync()`
-- [ ] 6.9 Implement `BindToConnection(DbConnection, DbTransaction?)` — return bound `Absurd` instance; attach `tx` to all commands; lazy-open connection if `State != Open`; never close or dispose the connection
-- [ ] 6.10 Implement `DisposeAsync` — stop worker, dispose owned `NpgsqlDataSource`
+- [x] 6.1 Create `Absurd.cs` constructor — accept `AbsurdOptions`, resolve connection string from env, create `NpgsqlDataSource` if needed, track ownership
+- [x] 6.2 Implement `SpawnAsync<TParams>(taskName, params, SpawnOptions?)` — call spawn stored procedure, apply `BeforeSpawn` hook, return `SpawnResult`
+- [x] 6.3 Implement `FetchTaskResultAsync(taskId)` → `TaskSnapshot?`
+- [x] 6.4 Implement `AwaitTaskResultAsync(taskId, options?)` — polling loop with configurable interval; throw `TimeoutException` on expiry
+- [x] 6.5 Implement `EmitEventAsync(eventName, payload?, queueName?)` — queue-level event emission
+- [x] 6.6 Implement `CancelTaskAsync(taskId, queueName?)`
+- [x] 6.7 Implement `RetryTaskAsync(taskId, options?)` — in-place and new-task modes
+- [x] 6.8 Implement `CreateQueueAsync(name)`, `DropQueueAsync(name)`, `ListQueuesAsync()`
+- [x] 6.9 Implement `BindToConnection(DbConnection, DbTransaction?)` — return bound `Absurd` instance; attach `tx` to all commands; lazy-open connection if `State != Open`; never close or dispose the connection
+- [x] 6.10 Implement `DisposeAsync` — stop worker, dispose owned `NpgsqlDataSource`
 
 ## 7. Worker
 
-- [ ] 7.1 Create `WorkerOptions.cs` — `Concurrency`, `ClaimTimeoutSeconds`, `BatchSize`, `PollIntervalSeconds`, `WorkerId`, `FatalOnLeaseTimeout`, `OnError`
-- [ ] 7.2 Create `AbsurdWorker.cs` — `PeriodicTimer` poll loop, `SemaphoreSlim` concurrency gate
-- [ ] 7.3 Implement task claim loop: call claim stored procedure, dispatch each claimed task to a `Task.Run` slot
-- [ ] 7.4 Implement handler dispatch: deserialise params, build `TaskContext`, apply `WrapTaskExecution` hook, invoke handler, write result or error
-- [ ] 7.5 Implement `StopAsync(CancellationToken)` — stop polling, drain in-flight tasks
-- [ ] 7.6 Implement `FatalOnLeaseTimeout` watchdog — background timer per task, `Environment.Exit` on 2× expiry
-- [ ] 7.7 Add `StartWorkerAsync(WorkerOptions?)` to `Absurd` class
-- [ ] 7.8 Implement `WorkBatchAsync(workerId, claimTimeoutSeconds, batchSize, CancellationToken cancellationToken = default)` — check token before claiming; claim once, run all, return; respect token cancellation mid-flight (stop claiming, let in-flight tasks finish)
+- [x] 7.1 Create `WorkerOptions.cs` — `Concurrency`, `ClaimTimeoutSeconds`, `BatchSize`, `PollIntervalSeconds`, `WorkerId`, `FatalOnLeaseTimeout`, `OnError`
+- [x] 7.2 Create `AbsurdWorker.cs` — `PeriodicTimer` poll loop, `SemaphoreSlim` concurrency gate
+- [x] 7.3 Implement task claim loop: call claim stored procedure, dispatch each claimed task to a `Task.Run` slot
+- [x] 7.4 Implement handler dispatch: deserialise params, build `TaskContext`, apply `WrapTaskExecution` hook, invoke handler, write result or error
+- [x] 7.5 Implement `StopAsync(CancellationToken)` — stop polling, drain in-flight tasks
+- [x] 7.6 Implement `FatalOnLeaseTimeout` watchdog — background timer per task, `Environment.Exit` on 2× expiry
+- [x] 7.7 Add `StartWorkerAsync(WorkerOptions?)` to `Absurd` class
+- [x] 7.8 Implement `WorkBatchAsync(workerId, claimTimeoutSeconds, batchSize, CancellationToken cancellationToken = default)` — check token before claiming; claim once, run all, return; respect token cancellation mid-flight (stop claiming, let in-flight tasks finish)
 
 ## 8. Integration Tests
 
