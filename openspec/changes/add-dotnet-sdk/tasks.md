@@ -1,46 +1,44 @@
 ## 1. Repository & Project Setup
 
-- [ ] 1.1 Create `sdks/dotnet/` directory with `Absurd.Sdk.sln`, `Absurd.Sdk/Absurd.Sdk.csproj` (targeting `net10.0`), and `Absurd.Sdk.Tests/Absurd.Sdk.Tests.csproj`
-- [ ] 1.2 Add `Npgsql` and `Microsoft.Extensions.Logging.Abstractions` NuGet references to `Absurd.Sdk.csproj`
-- [ ] 1.3 Add `xunit`, `xunit.runner.visualstudio`, `Testcontainers.PostgreSql`, and `Microsoft.NET.Test.Sdk` to `Absurd.Sdk.Tests.csproj`
-- [ ] 1.4 Add NuGet package metadata to `Absurd.Sdk.csproj` (`PackageId`, `Version`, `Description`, `Authors`, `RepositoryUrl`)
-- [ ] 1.5 Add `dotnet-build` and `dotnet-test` targets to the top-level `Makefile`
-- [ ] 1.6 Add `.github` CI step (or document manual build) for `dotnet test sdks/dotnet/`
+- [x] 1.1 Create `sdks/dotnet/` directory with `Absurd.Sdk.sln`, `Absurd.Sdk/Absurd.Sdk.csproj` (targeting `net10.0`), and `Absurd.Sdk.Tests/Absurd.Sdk.Tests.csproj`
+- [x] 1.2 Add `Npgsql` and `Microsoft.Extensions.Logging.Abstractions` NuGet references to `Absurd.Sdk.csproj`
+- [x] 1.3 Add `xunit`, `xunit.runner.visualstudio`, `Testcontainers.PostgreSql`, and `Microsoft.NET.Test.Sdk` to `Absurd.Sdk.Tests.csproj`
+- [x] 1.4 Add NuGet package metadata to `Absurd.Sdk.csproj` (`PackageId`, `Version`, `Description`, `Authors`, `RepositoryUrl`)
 
 ## 2. Core Types & Options
 
-- [ ] 2.1 Create `AbsurdOptions.cs` — `ConnectionString`, `DataSource` (NpgsqlDataSource), `QueueName` (default `"default"`), `DefaultMaxAttempts` (default `5`), `Log` (ILogger), `Hooks` (IAbsurdHooks?)
-- [ ] 2.2 Create `SpawnOptions.cs` — `MaxAttempts`, `RetryStrategy`, `Headers`, `Queue`, `Cancellation`, `IdempotencyKey`
-- [ ] 2.3 Create `SpawnResult.cs` — `TaskId`, `RunId`, `Attempt`, `Created`
-- [ ] 2.4 Create `TaskSnapshot.cs` — mirrors the TypeScript `TaskResult` shape (status, result, error, etc.)
-- [ ] 2.5 Create `RetryStrategy.cs` — discriminated union / sealed class hierarchy: `FixedRetryStrategy`, `ExponentialRetryStrategy`, `NoRetryStrategy`
-- [ ] 2.6 Create `CancellationPolicy.cs` — `MaxDuration` (seconds), `MaxDelay` (seconds)
-- [ ] 2.7 Create `Errors.cs` — `TimeoutException` (Absurd-specific), `TaskCancelledException`, `FailedTaskException`
+- [x] 2.1 Create `AbsurdOptions.cs` — `ConnectionString`, `DataSource` (NpgsqlDataSource), `QueueName` (default `"default"`), `DefaultMaxAttempts` (default `5`), `Log` (ILogger), `Hooks` (IAbsurdHooks?)
+- [x] 2.2 Create `SpawnOptions.cs` — `MaxAttempts`, `RetryStrategy`, `Headers`, `Queue`, `Cancellation`, `IdempotencyKey`
+- [x] 2.3 Create `SpawnResult.cs` — `TaskId`, `RunId`, `Attempt`, `Created`
+- [x] 2.4 Create `TaskSnapshot.cs` — mirrors the TypeScript `TaskResult` shape (status, result, error, etc.)
+- [x] 2.5 Create `RetryStrategy.cs` — discriminated union / sealed class hierarchy: `FixedRetryStrategy`, `ExponentialRetryStrategy`, `NoRetryStrategy`
+- [x] 2.6 Create `CancellationPolicy.cs` — `MaxDuration` (seconds), `MaxDelay` (seconds)
+- [x] 2.7 Create `Errors.cs` — `TimeoutException` (Absurd-specific), `TaskCancelledException`, `FailedTaskException`
 
 ## 3. Hooks Interface
 
-- [ ] 3.1 Create `IAbsurdHooks.cs` with default no-op implementations of `BeforeSpawnAsync` and `WrapTaskExecutionAsync`
-- [ ] 3.2 Verify partial implementation (only one method) compiles without error
+- [x] 3.1 Create `IAbsurdHooks.cs` with default no-op implementations of `BeforeSpawnAsync` and `WrapTaskExecutionAsync`
+- [x] 3.2 Verify partial implementation (only one method) compiles without error
 
 ## 4. TaskContext
 
-- [ ] 4.1 Create `TaskContext.cs` exposing `TaskId` (string), `Headers` (IReadOnlyDictionary<string, JsonElement>)
-- [ ] 4.2 Implement `StepAsync<T>(name, Func<Task<T>> fn)` — call `absurd_begin_checkpoint`, check if done (return cached), else execute fn, call `absurd_complete_checkpoint`
-- [ ] 4.3 Implement `BeginStepAsync<T>(name)` → `StepHandle<T>` and `CompleteStepAsync<T>(handle, value)`
-- [ ] 4.4 Implement `SleepForAsync(stepName, TimeSpan)` — translates to stored procedure call
-- [ ] 4.5 Implement `SleepUntilAsync(stepName, DateTimeOffset)` — translates to stored procedure call
-- [ ] 4.6 Implement `AwaitEventAsync(eventName, options?)` — suspend + timeout support; throw `TimeoutException` on expiry
-- [ ] 4.7 Implement `ctx.AwaitTaskResultAsync(taskId, options)` — cross-queue wait, checkpoint as step, validate queue differs
-- [ ] 4.8 Implement `HeartbeatAsync(seconds?)` — extend claim lease
-- [ ] 4.9 Implement `EmitEventAsync(eventName, payload?)` — idempotent first-emit semantics
-- [ ] 4.10 Implement internal cancellation detection at each checkpoint call
+- [x] 4.1 Create `TaskContext.cs` exposing `TaskId` (string), `Headers` (IReadOnlyDictionary<string, JsonElement>)
+- [x] 4.2 Implement `StepAsync<T>(name, Func<Task<T>> fn)` — call `absurd_begin_checkpoint`, check if done (return cached), else execute fn, call `absurd_complete_checkpoint`
+- [x] 4.3 Implement `BeginStepAsync<T>(name)` → `StepHandle<T>` and `CompleteStepAsync<T>(handle, value)`
+- [x] 4.4 Implement `SleepForAsync(stepName, TimeSpan)` — translates to stored procedure call
+- [x] 4.5 Implement `SleepUntilAsync(stepName, DateTimeOffset)` — translates to stored procedure call
+- [x] 4.6 Implement `AwaitEventAsync(eventName, options?)` — suspend + timeout support; throw `TimeoutException` on expiry
+- [x] 4.7 Implement `ctx.AwaitTaskResultAsync(taskId, options)` — cross-queue wait, checkpoint as step, validate queue differs
+- [x] 4.8 Implement `HeartbeatAsync(seconds?)` — extend claim lease
+- [x] 4.9 Implement `EmitEventAsync(eventName, payload?)` — idempotent first-emit semantics
+- [x] 4.10 Implement internal cancellation detection at each checkpoint call
 
 ## 5. Task Registration
 
-- [ ] 5.1 Create `TaskRegistrationOptions.cs` — `Name`, `Queue`, `DefaultMaxAttempts`, `DefaultCancellation`
-- [ ] 5.2 Add `RegisterTask<TParams>(name, Func<TParams, TaskContext, Task> handler, TaskRegistrationOptions? options = null)` to `Absurd` class
-- [ ] 5.3 Store registrations in an internal `Dictionary<string, TaskRegistration>` keyed by task name
-- [ ] 5.4 Implement params deserialisation using `System.Text.Json` with `JsonSerializerDefaults.Web`
+- [x] 5.1 Create `TaskRegistrationOptions.cs` — `Name`, `Queue`, `DefaultMaxAttempts`, `DefaultCancellation`
+- [x] 5.2 Add `RegisterTask<TParams>(name, Func<TParams, TaskContext, Task> handler, TaskRegistrationOptions? options = null)` to `Absurd` class
+- [x] 5.3 Store registrations in an internal `Dictionary<string, TaskRegistration>` keyed by task name
+- [x] 5.4 Implement params deserialisation using `System.Text.Json` with `JsonSerializerDefaults.Web`
 
 ## 6. Core Client (`Absurd` class)
 

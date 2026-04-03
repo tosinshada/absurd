@@ -43,3 +43,13 @@ test-typescript:
 test-python:
 	@echo "Running Python SDK tests"
 	@cd sdks/python; uv run pytest
+
+# Build .NET SDK
+dotnet-build:
+	@echo "Building .NET SDK"
+	@cd sdks/dotnet && dotnet build
+
+# Run .NET SDK tests
+dotnet-test:
+	@echo "Running .NET SDK tests"
+	@cd sdks/dotnet && dotnet test
