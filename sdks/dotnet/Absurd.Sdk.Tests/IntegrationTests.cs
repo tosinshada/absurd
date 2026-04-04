@@ -1,3 +1,4 @@
+using Absurd.Options;
 using System.Text.Json;
 using Xunit;
 
@@ -49,7 +50,7 @@ internal sealed class WrappingHooks(Action onWrap) : IAbsurdHooks
 public sealed class IntegrationTests(TestFixture fixture)
 {
     /// Returns a unique queue name for test isolation.
-    private static string Q() => "t" + Guid.NewGuid().ToString("N")[..16];
+    private static string GetQueueName() => "t" + Guid.NewGuid().ToString("N")[..16];
 
     /// Runs WorkBatch(batchSize=1) repeatedly until the task reaches a terminal
     /// state, then returns the final snapshot.
@@ -75,7 +76,7 @@ public sealed class IntegrationTests(TestFixture fixture)
     [Fact]
     public async Task SpawnAndAwait_SimpleTaskWithOneStep_Completes()
     {
-        var queue = Q();
+        var queue = GetQueueName();
         await using var client = fixture.CreateClient(queue);
         await client.CreateQueueAsync(queue);
 
@@ -96,7 +97,7 @@ public sealed class IntegrationTests(TestFixture fixture)
     [Fact]
     public async Task StepCaching_FnNotCalledOnRetry()
     {
-        var queue = Q();
+        var queue = GetQueueName();
         await using var client = fixture.CreateClient(queue);
         await client.CreateQueueAsync(queue);
 
@@ -135,7 +136,7 @@ public sealed class IntegrationTests(TestFixture fixture)
     [Fact]
     public async Task IdempotentSpawn_SameKeyReturnsSameTask()
     {
-        var queue = Q();
+        var queue = GetQueueName();
         await using var client = fixture.CreateClient(queue);
         await client.CreateQueueAsync(queue);
 
@@ -154,7 +155,7 @@ public sealed class IntegrationTests(TestFixture fixture)
     [Fact]
     public async Task SleepFor_TaskSuspendsAndResumesAfterDuration()
     {
-        var queue = Q();
+        var queue = GetQueueName();
         await using var client = fixture.CreateClient(queue);
         await client.CreateQueueAsync(queue);
 
@@ -185,7 +186,7 @@ public sealed class IntegrationTests(TestFixture fixture)
     [Fact]
     public async Task AwaitEvent_TaskSuspendsAndResumesWithPayload()
     {
-        var queue = Q();
+        var queue = GetQueueName();
         await using var client = fixture.CreateClient(queue);
         await client.CreateQueueAsync(queue);
 
@@ -217,7 +218,7 @@ public sealed class IntegrationTests(TestFixture fixture)
     [Fact]
     public async Task AwaitEvent_TimeoutThrowsWhenNoEventArrives()
     {
-        var queue = Q();
+        var queue = GetQueueName();
         await using var client = fixture.CreateClient(queue);
         await client.CreateQueueAsync(queue);
 
@@ -248,7 +249,7 @@ public sealed class IntegrationTests(TestFixture fixture)
     [Fact]
     public async Task CancelTask_RunningTaskTransitionsToCancelled()
     {
-        var queue = Q();
+        var queue = GetQueueName();
         await using var client = fixture.CreateClient(queue);
         await client.CreateQueueAsync(queue);
 
@@ -274,7 +275,7 @@ public sealed class IntegrationTests(TestFixture fixture)
     [Fact]
     public async Task RetryTask_FailedTaskIsRequeued()
     {
-        var queue = Q();
+        var queue = GetQueueName();
         await using var client = fixture.CreateClient(queue);
         await client.CreateQueueAsync(queue);
 
@@ -312,7 +313,7 @@ public sealed class IntegrationTests(TestFixture fixture)
     [Fact]
     public async Task BeforeSpawnHook_HeaderInjectedIntoTask()
     {
-        var queue = Q();
+        var queue = GetQueueName();
         await using var client = fixture.CreateClient(queue, new AbsurdOptions
         {
             Hooks = new InjectingHooks(() => "trace-abc"),
@@ -339,7 +340,7 @@ public sealed class IntegrationTests(TestFixture fixture)
     [Fact]
     public async Task WrapTaskExecutionHook_WrapperCalledAndHandlerExecutes()
     {
-        var queue = Q();
+        var queue = GetQueueName();
         var wrapperCalled = false;
 
         await using var client = fixture.CreateClient(queue, new AbsurdOptions
@@ -362,7 +363,7 @@ public sealed class IntegrationTests(TestFixture fixture)
     [Fact]
     public async Task BindToConnection_SpawnInsideRolledBackTransactionIsNotVisible()
     {
-        var queue = Q();
+        var queue = GetQueueName();
         await using var client = fixture.CreateClient(queue);
         await client.CreateQueueAsync(queue);
 
@@ -387,7 +388,7 @@ public sealed class IntegrationTests(TestFixture fixture)
     [Fact]
     public async Task WorkerConcurrency_TwoTasksRunInParallel()
     {
-        var queue = Q();
+        var queue = GetQueueName();
         await using var client = fixture.CreateClient(queue);
         await client.CreateQueueAsync(queue);
 
@@ -430,7 +431,7 @@ public sealed class IntegrationTests(TestFixture fixture)
     [Fact]
     public async Task WorkBatch_ClaimsAndRunsTasksThenReturns()
     {
-        var queue = Q();
+        var queue = GetQueueName();
         await using var client = fixture.CreateClient(queue);
         await client.CreateQueueAsync(queue);
 

@@ -1,3 +1,4 @@
+using Absurd.Options;
 using Microsoft.Extensions.Logging;
 
 namespace Absurd;
@@ -57,12 +58,12 @@ public sealed class AbsurdWorker : IAsyncDisposable
 
     private async Task RunAsync(CancellationToken ct)
     {
-        var concurrency      = Math.Max(_options.Concurrency, 1);
-        var effectiveBatch   = _options.BatchSize ?? concurrency;
-        var workerId         = _options.WorkerId ?? $"{Environment.MachineName}:{Environment.ProcessId}";
-        var interval         = TimeSpan.FromSeconds(Math.Max(_options.PollIntervalSeconds, 0.01));
+        var concurrency = Math.Max(_options.Concurrency, 1);
+        var effectiveBatch = _options.BatchSize ?? concurrency;
+        var workerId = _options.WorkerId ?? $"{Environment.MachineName}:{Environment.ProcessId}";
+        var interval = TimeSpan.FromSeconds(Math.Max(_options.PollIntervalSeconds, 0.01));
 
-        using var gate  = new SemaphoreSlim(concurrency, concurrency);
+        using var gate = new SemaphoreSlim(concurrency, concurrency);
         using var timer = new PeriodicTimer(interval);
         var pending = new List<Task>();
 

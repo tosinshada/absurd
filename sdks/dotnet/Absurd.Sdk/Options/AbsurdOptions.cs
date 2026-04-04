@@ -1,7 +1,8 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
 
-namespace Absurd;
+namespace Absurd.Options;
 
 /// <summary>
 /// Configuration options for the <see cref="AbsurdClient"/> class.

@@ -1,4 +1,4 @@
-namespace Absurd;
+namespace Absurd.Options;
 
 /// <summary>
 /// Defines automatic cancellation conditions for a task.

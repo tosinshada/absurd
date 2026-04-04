@@ -5,8 +5,8 @@ namespace Absurd.Internal;
 /// <summary>Represents a task claimed from the queue by a worker.</summary>
 internal sealed class ClaimedTask
 {
-    public required string RunId { get; init; }
-    public required string TaskId { get; init; }
+    public required Guid RunId { get; init; }
+    public required Guid TaskId { get; init; }
     public required string TaskName { get; init; }
     public required int Attempt { get; init; }
     public JsonElement Params { get; init; }

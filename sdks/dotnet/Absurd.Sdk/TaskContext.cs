@@ -9,7 +9,7 @@ namespace Absurd;
 
 /// <summary>
 /// Context object passed to every task handler. Provides step checkpointing,
-/// sleep, event waiting, heartbeating, and event emission.
+/// sleep, event waiting, heart beating, and event emission.
 /// </summary>
 public sealed class TaskContext
 {
@@ -23,7 +23,7 @@ public sealed class TaskContext
     private readonly int _claimTimeout;
     private readonly Action<int> _onLeaseExtended;
 
-    private static readonly JsonSerializerOptions _jsonOptions =
+    private static readonly JsonSerializerOptions JsonOptions =
         new(JsonSerializerDefaults.Web);
 
     private TaskContext(
@@ -47,7 +47,7 @@ public sealed class TaskContext
     }
 
     /// <summary>The unique identifier of the current task.</summary>
-    public string TaskId => _task.TaskId;
+    public Guid TaskId => _task.TaskId;
 
     /// <summary>
     /// Read-only JSON headers attached to the task.
@@ -76,7 +76,7 @@ public sealed class TaskContext
         var cache = new Dictionary<string, JsonElement>();
         await using var cmd = CreateCommand(con, tx,
             "SELECT checkpoint_name, state FROM absurd.get_task_checkpoint_states($1, $2, $3)",
-            queueName, Guid.Parse(task.TaskId), Guid.Parse(task.RunId));
+            queueName, task.TaskId, task.RunId);
 
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
@@ -89,7 +89,7 @@ public sealed class TaskContext
         var ctx = new TaskContext(log, con, tx, queueName, task, cache, claimTimeout, onLeaseExtended);
 
         // Populate Headers from the ClaimedTask
-        if (task.Headers.HasValue && task.Headers.Value.ValueKind == JsonValueKind.Object)
+        if (task.Headers is { ValueKind: JsonValueKind.Object })
         {
             var headers = new Dictionary<string, JsonElement>();
             foreach (var prop in task.Headers.Value.EnumerateObject())
@@ -129,7 +129,7 @@ public sealed class TaskContext
 
         if (_checkpointCache.TryGetValue(checkpointName, out var cached))
         {
-            var state = cached.Deserialize<T>(_jsonOptions);
+            var state = cached.Deserialize<T>(JsonOptions);
             return Task.FromResult(new StepHandle<T>
             {
                 Name = name,
@@ -176,7 +176,7 @@ public sealed class TaskContext
         DateTimeOffset actualWakeAt = wakeAt;
         if (_checkpointCache.TryGetValue(checkpointName, out var cached))
         {
-            actualWakeAt = cached.Deserialize<DateTimeOffset>(_jsonOptions);
+            actualWakeAt = cached.Deserialize<DateTimeOffset>(JsonOptions);
         }
         else
         {
@@ -217,7 +217,7 @@ public sealed class TaskContext
 
         await using var cmd = CreateCommand(_con, _tx,
             "SELECT should_suspend, payload FROM absurd.await_event($1, $2, $3, $4, $5, $6)",
-            _queueName, Guid.Parse(_task.TaskId), Guid.Parse(_task.RunId), checkpointName, eventName, (object?)timeoutInt ?? DBNull.Value);
+            _queueName, _task.TaskId, _task.RunId, checkpointName, eventName, (object?)timeoutInt ?? DBNull.Value);
 
         await using var reader = await ExecuteReaderWithStateCheckAsync(cmd);
         if (!await reader.ReadAsync())
@@ -243,10 +243,10 @@ public sealed class TaskContext
         if (string.IsNullOrEmpty(eventName))
             throw new ArgumentException("eventName must not be empty.", nameof(eventName));
 
-        var payloadJson = payload is null ? "null" : JsonSerializer.Serialize(payload, _jsonOptions);
+        var payloadJson = payload is null ? "null" : JsonSerializer.Serialize(payload, JsonOptions);
         // No UUID params — payloadJson is `jsonb` but Postgres accepts text for jsonb assignment.
         await using var cmd = CreateCommand(_con, _tx,
-            "SELECT absurd.emit_event($1, $2, $3)",
+            "SELECT absurd.emit_event($1, $2, $3::jsonb)",
             _queueName, eventName, payloadJson);
         await cmd.ExecuteNonQueryAsync();
     }
@@ -263,7 +263,7 @@ public sealed class TaskContext
         var lease = seconds ?? _claimTimeout;
         await using var cmd = CreateCommand(_con, _tx,
             "SELECT absurd.extend_claim($1, $2, $3)",
-            _queueName, Guid.Parse(_task.RunId), lease);
+            _queueName, _task.RunId, lease);
         await ExecuteNonQueryWithStateCheckAsync(cmd);
         _onLeaseExtended(lease);
     }
@@ -331,10 +331,10 @@ public sealed class TaskContext
 
     private async Task PersistCheckpointAsync<T>(string checkpointName, T value)
     {
-        var json = JsonSerializer.Serialize(value, _jsonOptions);
+        var json = JsonSerializer.Serialize(value, JsonOptions);
         await using var cmd = CreateCommand(_con, _tx,
-            "SELECT absurd.set_task_checkpoint_state($1, $2, $3, $4, $5, $6)",
-            _queueName, Guid.Parse(_task.TaskId), checkpointName, json, Guid.Parse(_task.RunId), _claimTimeout);
+            "SELECT absurd.set_task_checkpoint_state($1, $2, $3, $4::jsonb, $5, $6)",
+            _queueName, _task.TaskId, checkpointName, json, _task.RunId, _claimTimeout);
         await ExecuteNonQueryWithStateCheckAsync(cmd);
         _checkpointCache[checkpointName] = JsonDocument.Parse(json).RootElement.Clone();
         _onLeaseExtended(_claimTimeout);
@@ -344,7 +344,7 @@ public sealed class TaskContext
     {
         await using var cmd = CreateCommand(_con, _tx,
             "SELECT absurd.schedule_run($1, $2, $3)",
-            _queueName, Guid.Parse(_task.RunId), wakeAt.UtcDateTime);
+            _queueName, _task.RunId, wakeAt.UtcDateTime);
         await cmd.ExecuteNonQueryAsync();
     }
 

@@ -1,4 +1,4 @@
-namespace Absurd;
+namespace Absurd.Options;
 
 /// <summary>
 /// Base class for all retry strategies.

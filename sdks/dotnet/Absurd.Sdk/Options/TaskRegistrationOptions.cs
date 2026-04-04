@@ -1,4 +1,4 @@
-namespace Absurd;
+namespace Absurd.Options;
 
 /// <summary>
 /// Options for registering a task handler with <see cref="AbsurdClient.RegisterTask{TParams}"/>.

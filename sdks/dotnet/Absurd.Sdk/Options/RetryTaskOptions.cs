@@ -1,4 +1,4 @@
-namespace Absurd;
+namespace Absurd.Options;
 
 /// <summary>
 /// Options for <see cref="AbsurdClient.RetryTaskAsync"/>.

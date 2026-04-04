@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Absurd;
+namespace Absurd.Options;
 
 /// <summary>
 /// Options controlling how a task is spawned.

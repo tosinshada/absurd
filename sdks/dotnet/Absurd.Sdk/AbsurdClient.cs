@@ -2,6 +2,7 @@ using System.Data;
 using System.Data.Common;
 using System.Text.Json;
 using Absurd.Internal;
+using Absurd.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
@@ -105,7 +106,7 @@ public sealed class AbsurdClient : IAsyncDisposable
             Handler = (paramsJson, ctx) =>
             {
                 var typedParams = paramsJson.Deserialize<TParams>(JsonOptions)
-                    ?? throw new InvalidOperationException($"Failed to deserialise params for task '{name}'.");
+                    ?? throw new InvalidOperationException($"Failed to deserialize params for task '{name}'.");
                 return handler(typedParams, ctx);
             },
         };
@@ -178,7 +179,7 @@ public sealed class AbsurdClient : IAsyncDisposable
         try
         {
             await using var cmd = TaskContext.CreateCommand(con, CurrentTransaction,
-                "SELECT task_id, run_id, attempt, created FROM absurd.spawn_task($1, $2, $3, $4)",
+                "SELECT task_id, run_id, attempt, created FROM absurd.spawn_task($1, $2, $3::jsonb, $4::jsonb)",
                 queue, taskName, paramsJson, optionsJson);
 
             await using var reader = await cmd.ExecuteReaderAsync(ct);
@@ -287,7 +288,7 @@ public sealed class AbsurdClient : IAsyncDisposable
         try
         {
             await using var cmd = TaskContext.CreateCommand(con, CurrentTransaction,
-                "SELECT absurd.emit_event($1, $2, $3)",
+                "SELECT absurd.emit_event($1, $2, $3::jsonb)",
                 queue, eventName, payloadJson);
             await cmd.ExecuteNonQueryAsync(ct);
         }
@@ -339,7 +340,7 @@ public sealed class AbsurdClient : IAsyncDisposable
         try
         {
             await using var cmd = TaskContext.CreateCommand(con, CurrentTransaction,
-                "SELECT task_id, run_id, attempt, created FROM absurd.retry_task($1, $2, $3)",
+                "SELECT task_id, run_id, attempt, created FROM absurd.retry_task($1, $2, $3::jsonb)",
                 queue, Guid.Parse(taskId), optionsJson);
 
             await using var reader = await cmd.ExecuteReaderAsync(ct);
@@ -485,8 +486,8 @@ public sealed class AbsurdClient : IAsyncDisposable
             {
                 result.Add(new ClaimedTask
                 {
-                    RunId         = reader.GetFieldValue<Guid>(0).ToString(),
-                    TaskId        = reader.GetFieldValue<Guid>(1).ToString(),
+                    RunId         = reader.GetFieldValue<Guid>(0),
+                    TaskId        = reader.GetFieldValue<Guid>(1),
                     Attempt       = reader.GetInt32(2),
                     TaskName      = reader.GetString(3),
                     Params        = reader.IsDBNull(4) ? default : reader.GetFieldValue<JsonElement>(4),
@@ -556,7 +557,7 @@ public sealed class AbsurdClient : IAsyncDisposable
                 await registration.Handler(claimed.Params, ctx);
                 await using var completeCmd = TaskContext.CreateCommand(con, null,
                     "SELECT absurd.complete_run($1, $2)",
-                    QueueName, Guid.Parse(claimed.RunId));
+                    QueueName, claimed.RunId);
                 await completeCmd.ExecuteNonQueryAsync(ct);
             }
 
@@ -595,9 +596,9 @@ public sealed class AbsurdClient : IAsyncDisposable
                 }, JsonOptions);
 
                 await using var failCmd = TaskContext.CreateCommand(con, null,
-                    "SELECT absurd.fail_run($1, $2, $3)",
-                    QueueName, Guid.Parse(claimed.RunId), reason);
-                await failCmd.ExecuteNonQueryAsync();
+                    "SELECT absurd.fail_run($1, $2, $3::jsonb)",
+                    QueueName, claimed.RunId, reason);
+                await failCmd.ExecuteNonQueryAsync(ct);
             }
             catch (Exception failEx)
             {
@@ -612,7 +613,7 @@ public sealed class AbsurdClient : IAsyncDisposable
 
     private string BuildSpawnOptionsJson(SpawnOptions options)
     {
-        using var ms = new System.IO.MemoryStream();
+        using var ms = new MemoryStream();
         using var writer = new Utf8JsonWriter(ms);
         writer.WriteStartObject();
 
@@ -655,7 +656,7 @@ public sealed class AbsurdClient : IAsyncDisposable
     {
         if (options is null) return "{}";
 
-        using var ms = new System.IO.MemoryStream();
+        using var ms = new MemoryStream();
         using var writer = new Utf8JsonWriter(ms);
         writer.WriteStartObject();
 
