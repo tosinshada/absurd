@@ -105,13 +105,25 @@ internal static class PathHelpers
 
     /// <summary>
     /// Builds the full runtime configuration object used by the SPA.
+    /// The base path is derived from <see cref="HttpRequest.PathBase"/> (set automatically
+    /// by <c>app.Map</c>) combined with any reverse-proxy forwarded prefix headers.
     /// </summary>
-    internal static RuntimeConfig BuildRuntimeConfig(HttpRequest request, string configuredBasePath)
+    internal static RuntimeConfig BuildRuntimeConfig(HttpRequest request)
     {
-        var basePath = ResolvePublicBasePath(request, configuredBasePath);
+        var basePath = ResolvePublicBasePath(request);
         return new RuntimeConfig(
             BasePath: basePath,
             ApiBasePath: JoinPathPrefixes(basePath, "/api"),
             StaticBasePath: JoinPathPrefixes(basePath, "/_static"));
+    }
+
+    /// <summary>
+    /// Resolves the effective public base path using <see cref="HttpRequest.PathBase"/>
+    /// (set by <c>app.Map</c>) plus any X-Forwarded-Prefix header from a reverse proxy.
+    /// </summary>
+    private static string ResolvePublicBasePath(HttpRequest request)
+    {
+        var pathBase = NormalizePathPrefix(request.PathBase.Value ?? string.Empty);
+        return ResolvePublicBasePath(request, pathBase);
     }
 }

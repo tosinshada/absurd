@@ -29,46 +29,46 @@
 
 ## 5. MapAbsurdDashboard Routing
 
-- [ ] 5.1 Implement `MapAbsurdDashboard(string pathPrefix)` extension on `IEndpointRouteBuilder` that creates an isolated pipeline branch stripping the prefix
-- [ ] 5.2 Wire internal routes within the branch: `/_healthz`, `/_static/**`, `/api/**`, and SPA fallback (`/**`)
-- [ ] 5.3 Verify that routes outside the prefix are unaffected by the branch
+- [x] 5.1 Implement `MapAbsurdDashboard(string pathPrefix)` extension on `IApplicationBuilder` that creates an isolated pipeline branch stripping the prefix
+- [x] 5.2 Wire internal routes within the branch: `/_healthz`, `/_static/**`, `/api/**`, and SPA fallback (`/**`)
+- [x] 5.3 Verify that routes outside the prefix are unaffected by the branch
 
 ## 6. Health Check Endpoint (`/_healthz`)
 
-- [ ] 6.1 Implement `GET /_healthz` handler: ping the database via `NpgsqlDataSource` and return 200 `ok` or 503 `database unavailable`
+- [x] 6.1 Implement `GET /_healthz` handler: ping the database via `NpgsqlDataSource` and return 200 `ok` or 503 `database unavailable`
 
 ## 7. Config Endpoint (`/api/config`)
 
-- [ ] 7.1 Implement `GET /api/config` handler returning `{ basePath, apiBasePath, staticBasePath }` JSON
+- [x] 7.1 Implement `GET /api/config` handler returning `{ basePath, apiBasePath, staticBasePath }` JSON
 
 ## 8. Queues API (`/api/queues`, `/api/queues/{name}`)
 
-- [ ] 8.1 Port `handleQueues` from Go: query `absurd.queues`, return array of `{ queueName, createdAt }`
-- [ ] 8.2 Port `handleQueueResource` from Go: query detailed metrics for the named queue; return 404 if queue not found
-- [ ] 8.3 Implement queue name validation: only interpolate names returned from `absurd.queues` into dynamic SQL
+- [x] 8.1 Port `handleQueues` from Go: query `absurd.queues`, return per-queue task state counts
+- [x] 8.2 Port `handleQueueResource` from Go: route `/api/queues/{name}/tasks` and `/api/queues/{name}/events`
+- [x] 8.3 Implement queue name validation: only interpolate names returned from `absurd.queues` into dynamic SQL
 
 ## 9. Metrics API (`/api/metrics`)
 
-- [ ] 9.1 Port `handleMetrics` from Go: iterate all queues, build per-table metric queries using validated queue names, return `{ queues: [...] }`
+- [x] 9.1 Port `handleMetrics` from Go: iterate all queues, build per-table metric queries using validated queue names, return `{ queues: [...] }`
 
 ## 10. Tasks API (`/api/tasks`, `/api/tasks/{id}`, `/api/tasks/retry`)
 
-- [ ] 10.1 Port `handleTasks` from Go: implement all query parameters (`q`, `status`, `queue`, `taskName`, `taskId`, `after`, `before`, `page`, `perPage`), cap `perPage` at 200
-- [ ] 10.2 Port task candidate query and merge/sort logic across queues
-- [ ] 10.3 Port full-text search filter (`matchesTaskFilters`) in Go
-- [ ] 10.4 Port `listRecentTaskNames` with 1-minute in-memory cache
-- [ ] 10.5 Port `handleTaskDetail` from Go: return full task JSON including run history and checkpoints; 404 for missing/invalid IDs
-- [ ] 10.6 Port `handleRetryTask` from Go: accept `{ taskId, queueName }`, validate state, call retry stored procedure; return 400 for non-retryable state
+- [x] 10.1 Port `handleTasks` from Go: implement all query parameters (`q`, `status`, `queue`, `taskName`, `taskId`, `after`, `before`, `page`, `perPage`), cap `perPage` at 200
+- [x] 10.2 Port task candidate query and merge/sort logic across queues
+- [x] 10.3 Port full-text search filter (`matchesTaskFilters`) in Go
+- [x] 10.4 Port `listRecentTaskNames` with 1-minute in-memory cache
+- [x] 10.5 Port `handleTaskDetail` from Go: return full task JSON including run history and checkpoints; 404 for missing/invalid IDs
+- [x] 10.6 Port `handleRetryTask` from Go: accept `{ taskId, queueName }`, validate state, call retry stored procedure; return 400 for non-retryable state
 
 ## 11. Events API (`/api/events`)
 
-- [ ] 11.1 Port `handleEvents` from Go: support `queue`, `taskId`, `after`, `before`, `page`, `perPage` parameters; query event tables; return paginated response
+- [x] 11.1 Port `handleEvents` from Go: support `queue`, `eventName`, `after`, `before`, `limit` parameters; query per-queue event tables; return response
 
 ## 12. Error Handling and JSON Consistency
 
-- [ ] 12.1 Implement a shared `WriteJson` helper that sets `Content-Type: application/json` and serializes the response
-- [ ] 12.2 Implement a shared error response helper that returns `{ "error": "<message>" }` JSON for 4xx/5xx responses
-- [ ] 12.3 Add timeout handling for long-running queries (30 s default, 120 s for full-text search queries), consistent with Go implementation
+- [x] 12.1 Implement a shared `WriteJson` helper that sets `Content-Type: application/json` and serializes the response
+- [x] 12.2 Implement a shared error response helper that returns `{ "error": "<message>" }` JSON for 4xx/5xx responses
+- [x] 12.3 Add timeout handling for long-running queries (30 s default, 120 s for full-text search queries), consistent with Go implementation
 
 ## 13. Tests
 
@@ -80,4 +80,4 @@
 ## 14. Documentation
 
 - [ ] 14.1 Add `README.md` to `sdks/dotnet/Absurd.Dashboard/` covering installation, configuration options, and a minimal usage example for ASP.NET 8
-- [ ] 14.2 Update the root `docs/habitat.md` (or create `docs/habitat-dotnet.md`) to document the .NET package alongside the Go binary
+- [ ] 14.2 Create `docs/habitat-dotnet.md` to document the .NET package alongside the Go binary

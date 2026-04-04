@@ -1,3 +1,4 @@
+using Absurd.Dashboard.Handlers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -71,6 +72,13 @@ public static class DashboardServiceCollectionExtensions
                     "Configure it via AddAbsurdDashboard(opts => opts.ConnectionString = \"Host=...;Database=...;\").");
 
             return NpgsqlDataSource.Create(options.ConnectionString);
+        });
+
+        // Register handler as singleton; resolved from the DI container in the pipeline branch.
+        services.AddSingleton<DashboardHandler>(sp =>
+        {
+            var dataSource = sp.GetRequiredKeyedService<NpgsqlDataSource>(ServiceKey);
+            return new DashboardHandler(dataSource);
         });
 
         return services;
