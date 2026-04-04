@@ -4,6 +4,7 @@
 format:
 	@cd sdks/typescript && npx prettier -w .
 	@cd habitat/ui && npx prettier -w .
+	@cd sdks/dotnet/Absurd.Dashboard/ui && npx prettier -w .
 	@uvx ruff format tests
 	@gofmt -w habitat
 
@@ -44,13 +45,12 @@ test-python:
 	@echo "Running Python SDK tests"
 	@cd sdks/python; uv run pytest
 
-# Build Absurd.Dashboard SolidJS frontend and copy output to the .NET wwwroot/
+# Build Absurd.Dashboard SolidJS frontend.
+# The vite outDir is ../wwwroot so the build lands directly in the right place.
 # This must be run before `dotnet build` or `dotnet pack`.
 dashboard-ui:
 	@echo "Building Absurd.Dashboard UI"
-	@cd habitat/ui && npm install && npm run build
-	@mkdir -p sdks/dotnet/Absurd.Dashboard/wwwroot
-	@cp -r habitat/ui/dist/. sdks/dotnet/Absurd.Dashboard/wwwroot/
+	@cd sdks/dotnet/Absurd.Dashboard/ui && npm install && npm run build
 
 # Build .NET SDK (builds the SolidJS dashboard UI first to populate wwwroot/)
 dotnet-build: dashboard-ui

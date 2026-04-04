@@ -72,12 +72,12 @@
 
 ## 13. Tests
 
-- [ ] 13.1 Add unit tests for base-path injection logic (`renderIndexHTML` equivalent) covering empty prefix, custom prefix, and reverse-proxy prefix
-- [ ] 13.2 Add unit tests for queue name validation / SQL identifier building
-- [ ] 13.3 Add integration tests (using `testcontainers-dotnet` or similar) for at least: `/api/metrics`, `/api/tasks`, `/api/tasks/{id}`, `/api/queues`, `/_healthz`
-- [ ] 13.4 Add a test verifying the embedded resource manifest contains the expected frontend files after the build pipeline runs
+- [x] 13.1 Add unit tests for base-path injection logic (`renderIndexHTML` equivalent) covering empty prefix, custom prefix, and reverse-proxy prefix
+- [x] 13.2 Add unit tests for queue name validation / SQL identifier building
+- [x] 13.3 Add integration tests (using `testcontainers-dotnet` or similar) for at least: `/api/metrics`, `/api/tasks`, `/api/tasks/{id}`, `/api/queues`, `/_healthz`
+- [x] 13.4 Add a test verifying the embedded resource manifest contains the expected frontend files after the build pipeline runs
 
 ## 14. Documentation
 
-- [ ] 14.1 Add `README.md` to `sdks/dotnet/Absurd.Dashboard/` covering installation, configuration options, and a minimal usage example for ASP.NET 8
-- [ ] 14.2 Create `docs/habitat-dotnet.md` to document the .NET package alongside the Go binary
+- [x] 14.1 Add `README.md` to `sdks/dotnet/Absurd.Dashboard/` covering installation, configuration options, and a minimal usage example for ASP.NET 8
+- [x] 14.2 Create `docs/habitat-dotnet.md` to document the .NET package alongside the Go binary

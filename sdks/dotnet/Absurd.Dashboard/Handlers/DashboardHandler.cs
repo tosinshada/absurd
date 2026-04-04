@@ -52,17 +52,42 @@ internal sealed class DashboardHandler
         }
 
         // API: specific routes before prefix routes
-        if (path == "/api/config")       { await HandleConfigAsync(context);       return; }
-        if (path == "/api/metrics")      { await HandleMetricsAsync(context);      return; }
-        if (path == "/api/events")       { await HandleEventsAsync(context);       return; }
-        if (path == "/api/tasks/retry")  { await HandleRetryTaskAsync(context);    return; }
-        if (path == "/api/tasks")        { await HandleTasksAsync(context);        return; }
+        if (path == "/api/config")
+        {
+            await HandleConfigAsync(context); return;
+        }
+
+        if (path == "/api/metrics")
+        {
+            await HandleMetricsAsync(context); return;
+        }
+
+        if (path == "/api/events")
+        {
+            await HandleEventsAsync(context); return;
+        }
+
+        if (path == "/api/tasks/retry")
+        {
+            await HandleRetryTaskAsync(context); return;
+        }
+
+        if (path == "/api/tasks")
+        {
+            await HandleTasksAsync(context); return;
+        }
+
         if (path.StartsWith("/api/tasks/", StringComparison.OrdinalIgnoreCase))
         {
             await HandleTaskDetailAsync(context);
             return;
         }
-        if (path == "/api/queues")       { await HandleQueuesAsync(context);       return; }
+
+        if (path == "/api/queues")
+        {
+            await HandleQueuesAsync(context); return;
+        }
+
         if (path.StartsWith("/api/queues/", StringComparison.OrdinalIgnoreCase))
         {
             await HandleQueueResourceAsync(context);

@@ -25,6 +25,14 @@ internal sealed class IndexHtmlRenderer
         _indexHtml = LoadIndexHtml();
     }
 
+    /// <summary>
+    /// Test-only constructor that bypasses embedded-resource loading.
+    /// </summary>
+    internal IndexHtmlRenderer(byte[] indexHtml)
+    {
+        _indexHtml = indexHtml;
+    }
+
     // ---------------------------------------------------------------------------
     // Loading
     // ---------------------------------------------------------------------------

@@ -25,6 +25,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- Expose internal types to the Dashboard test project -->
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+			<_Parameter1>Absurd.Dashboard.Tests</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Npgsql" Version="9.*" />
 	</ItemGroup>
 
