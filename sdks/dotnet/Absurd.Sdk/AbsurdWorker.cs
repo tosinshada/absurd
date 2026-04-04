@@ -7,7 +7,7 @@ namespace Absurd;
 /// A long-lived background worker that polls for and executes tasks from the queue.
 /// Obtain an instance via <see cref="AbsurdClient.StartWorkerAsync"/>.
 /// </summary>
-public sealed class AbsurdWorker : IAsyncDisposable
+public sealed class AbsurdWorker : IDisposable, IAsyncDisposable
 {
     private readonly AbsurdClient _client;
     private readonly WorkerOptions _options;
@@ -43,6 +43,19 @@ public sealed class AbsurdWorker : IAsyncDisposable
                 // The caller's token fired — return without waiting further.
             }
         }
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Best-effort synchronous shutdown: cancels the poll loop and disposes the cancellation
+    /// token source, but does not block waiting for in-flight tasks to drain.
+    /// Use <see cref="DisposeAsync"/> (or <see cref="StopAsync"/>) when you need to wait for
+    /// in-flight tasks to complete before the process exits.
+    /// </remarks>
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
     }
 
     /// <inheritdoc/>

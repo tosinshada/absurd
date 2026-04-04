@@ -13,7 +13,7 @@ namespace Absurd;
 /// The Absurd SDK client. Create one instance per application and keep it for the
 /// lifetime of the process.
 /// </summary>
-public sealed class AbsurdClient : IAsyncDisposable
+public sealed class AbsurdClient : IDisposable, IAsyncDisposable, IAbsurdClient
 {
     private readonly NpgsqlDataSource? _ownedDataSource;
     private readonly NpgsqlDataSource? _externalDataSource;
@@ -22,7 +22,11 @@ public sealed class AbsurdClient : IAsyncDisposable
     private readonly DbConnection? _boundConnection;
     private readonly DbTransaction? _boundTransaction;
 
-    internal readonly string QueueName;
+    /// <summary>
+    /// Gets the name of the queue associated with this instance.
+    /// </summary>
+    public readonly string QueueName;
+
     internal readonly int DefaultMaxAttempts;
     internal readonly ILogger Log;
     internal readonly IAbsurdHooks? Hooks;
@@ -126,6 +130,10 @@ public sealed class AbsurdClient : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(connection);
         return new AbsurdClient(this, connection, transaction);
     }
+
+    /// <inheritdoc/>
+    IAbsurdClient IAbsurdClient.BindToConnection(DbConnection connection, DbTransaction? transaction)
+        => BindToConnection(connection, transaction);
 
     /// <summary>Opens a fresh connection from the data source.</summary>
     internal async Task<(NpgsqlConnection con, bool owned)> OpenConnectionAsync(CancellationToken ct = default)
@@ -707,6 +715,19 @@ public sealed class AbsurdClient : IAsyncDisposable
     // -------------------------------------------------------------------------
     // Dispose
     // -------------------------------------------------------------------------
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Prefer <see cref="DisposeAsync"/> where possible. This synchronous overload performs a
+    /// best-effort shutdown: it signals the worker to stop and disposes the data source
+    /// synchronously, but does not block waiting for in-flight tasks to drain.
+    /// </remarks>
+    public void Dispose()
+    {
+        _worker?.Dispose();
+        // Never dispose a bound connection — the caller owns it.
+        _ownedDataSource?.Dispose();
+    }
 
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()

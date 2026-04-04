@@ -17,6 +17,9 @@
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="Testcontainers.PostgreSql" Version="4.*" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.*" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.*" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="10.*" />
 	</ItemGroup>
 
 	<ItemGroup>

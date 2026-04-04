@@ -23,6 +23,9 @@
 	<ItemGroup>
 		<PackageReference Include="Npgsql" Version="9.*" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.*" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.*" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="10.*" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.*" />
 	</ItemGroup>
 
 </Project>
