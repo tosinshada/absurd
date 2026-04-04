@@ -66,23 +66,23 @@
 
 ## 8. Integration Tests
 
-- [ ] 8.1 Set up `TestContainerFixture` that spins up Postgres, applies `sql/absurd.sql`, and creates a test queue
-- [ ] 8.2 Test: spawn and await a simple task with one step
-- [ ] 8.3 Test: step caching — verify `fn` is not called on retry
-- [ ] 8.4 Test: idempotent spawn (same `IdempotencyKey` returns `Created = false`)
-- [ ] 8.5 Test: `SleepFor` — task suspends and resumes after elapsed time (use short duration)
-- [ ] 8.6 Test: `AwaitEvent` — task suspends, event emitted externally, task resumes with payload
-- [ ] 8.7 Test: `AwaitEvent` timeout — `TimeoutException` thrown after timeout
-- [ ] 8.8 Test: `CancelTask` — running task detects cancellation at next step
-- [ ] 8.9 Test: `RetryTask` — failed task re-queued successfully
-- [ ] 8.10 Test: `BeforeSpawn` hook — header injected into spawned task
-- [ ] 8.11 Test: `WrapTaskExecution` hook — wrapper called and handler executes
-- [ ] 8.12 Test: `BindToConnection` — spawn inside transaction rolls back with transaction
-- [ ] 8.13 Test: worker concurrency — `Concurrency = 2` runs two tasks in parallel
-- [ ] 8.14 Test: `WorkBatch` — claims and runs tasks, returns when done
+- [x] 8.1 Set up `TestContainerFixture` that spins up Postgres, applies `sql/absurd.sql`, and creates a test queue
+- [x] 8.2 Test: spawn and await a simple task with one step
+- [x] 8.3 Test: step caching — verify `fn` is not called on retry
+- [x] 8.4 Test: idempotent spawn (same `IdempotencyKey` returns `Created = false`)
+- [x] 8.5 Test: `SleepFor` — task suspends and resumes after elapsed time (use short duration)
+- [x] 8.6 Test: `AwaitEvent` — task suspends, event emitted externally, task resumes with payload
+- [x] 8.7 Test: `AwaitEvent` timeout — `TimeoutException` thrown after timeout
+- [x] 8.8 Test: `CancelTask` — running task detects cancellation at next step
+- [x] 8.9 Test: `RetryTask` — failed task re-queued successfully
+- [x] 8.10 Test: `BeforeSpawn` hook — header injected into spawned task
+- [x] 8.11 Test: `WrapTaskExecution` hook — wrapper called and handler executes
+- [x] 8.12 Test: `BindToConnection` — spawn inside transaction rolls back with transaction
+- [x] 8.13 Test: worker concurrency — `Concurrency = 2` runs two tasks in parallel
+- [x] 8.14 Test: `WorkBatch` — claims and runs tasks, returns when done
 
 ## 9. Documentation
 
-- [ ] 9.1 Create `docs/sdk-dotnet.md` — full API reference matching the structure of `docs/sdk-typescript.md`
-- [ ] 9.2 Add link to `docs/sdk-dotnet.md` from `docs/index.md` and `README.md`
-- [ ] 9.3 Add code examples in `sdks/dotnet/Absurd.Sdk/examples/` covering common patterns (spawn + await, worker, hooks, sleep, events)
+- [x] 9.1 Create `docs/sdk-dotnet.md` — full API reference matching the structure of `docs/sdk-typescript.md`
+- [x] 9.2 Add link to `docs/sdk-dotnet.md` from `docs/index.md` and `README.md`
+- [x] 9.3 Add code examples in `sdks/dotnet/Absurd.Sdk/examples/` covering common patterns (spawn + await, worker, hooks, sleep, events)

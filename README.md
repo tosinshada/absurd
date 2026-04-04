@@ -53,6 +53,7 @@ Currently SDKs exist for the following languages:
 
 * [TypeScript](sdks/typescript) (and JavaScript)
 * [Python](sdks/python)
+* [.NET](sdks/dotnet) (C#)
 
 ## Push vs Pull
 

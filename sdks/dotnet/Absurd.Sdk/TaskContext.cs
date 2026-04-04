@@ -76,7 +76,7 @@ public sealed class TaskContext
         var cache = new Dictionary<string, JsonElement>();
         await using var cmd = CreateCommand(con, tx,
             "SELECT checkpoint_name, state FROM absurd.get_task_checkpoint_states($1, $2, $3)",
-            queueName, task.TaskId, task.RunId);
+            queueName, Guid.Parse(task.TaskId), Guid.Parse(task.RunId));
 
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
@@ -217,7 +217,7 @@ public sealed class TaskContext
 
         await using var cmd = CreateCommand(_con, _tx,
             "SELECT should_suspend, payload FROM absurd.await_event($1, $2, $3, $4, $5, $6)",
-            _queueName, _task.TaskId, _task.RunId, checkpointName, eventName, (object?)timeoutInt ?? DBNull.Value);
+            _queueName, Guid.Parse(_task.TaskId), Guid.Parse(_task.RunId), checkpointName, eventName, (object?)timeoutInt ?? DBNull.Value);
 
         await using var reader = await ExecuteReaderWithStateCheckAsync(cmd);
         if (!await reader.ReadAsync())
@@ -244,6 +244,7 @@ public sealed class TaskContext
             throw new ArgumentException("eventName must not be empty.", nameof(eventName));
 
         var payloadJson = payload is null ? "null" : JsonSerializer.Serialize(payload, _jsonOptions);
+        // No UUID params — payloadJson is `jsonb` but Postgres accepts text for jsonb assignment.
         await using var cmd = CreateCommand(_con, _tx,
             "SELECT absurd.emit_event($1, $2, $3)",
             _queueName, eventName, payloadJson);
@@ -262,7 +263,7 @@ public sealed class TaskContext
         var lease = seconds ?? _claimTimeout;
         await using var cmd = CreateCommand(_con, _tx,
             "SELECT absurd.extend_claim($1, $2, $3)",
-            _queueName, _task.RunId, lease);
+            _queueName, Guid.Parse(_task.RunId), lease);
         await ExecuteNonQueryWithStateCheckAsync(cmd);
         _onLeaseExtended(lease);
     }
@@ -333,7 +334,7 @@ public sealed class TaskContext
         var json = JsonSerializer.Serialize(value, _jsonOptions);
         await using var cmd = CreateCommand(_con, _tx,
             "SELECT absurd.set_task_checkpoint_state($1, $2, $3, $4, $5, $6)",
-            _queueName, _task.TaskId, checkpointName, json, _task.RunId, _claimTimeout);
+            _queueName, Guid.Parse(_task.TaskId), checkpointName, json, Guid.Parse(_task.RunId), _claimTimeout);
         await ExecuteNonQueryWithStateCheckAsync(cmd);
         _checkpointCache[checkpointName] = JsonDocument.Parse(json).RootElement.Clone();
         _onLeaseExtended(_claimTimeout);
@@ -343,7 +344,7 @@ public sealed class TaskContext
     {
         await using var cmd = CreateCommand(_con, _tx,
             "SELECT absurd.schedule_run($1, $2, $3)",
-            _queueName, _task.RunId, wakeAt.UtcDateTime);
+            _queueName, Guid.Parse(_task.RunId), wakeAt.UtcDateTime);
         await cmd.ExecuteNonQueryAsync();
     }
 
@@ -351,7 +352,7 @@ public sealed class TaskContext
     {
         await using var cmd = CreateCommand(_con, _tx,
             "SELECT state, result, failure_reason FROM absurd.get_task_result($1, $2)",
-            queue, taskId);
+            queue, Guid.Parse(taskId));
         await using var reader = await cmd.ExecuteReaderAsync();
         if (!await reader.ReadAsync()) return null;
 

@@ -103,6 +103,7 @@ them race-free.
 
 - **[TypeScript SDK](./sdk-typescript.md)** — full API reference for Node.js / TypeScript
 - **[Python SDK](./sdk-python.md)** — sync and async clients using psycopg
+- **[.NET SDK](./sdk-dotnet.md)** — async client using Npgsql, targeting net10.0
 
 ## Tools
 

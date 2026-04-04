@@ -219,7 +219,7 @@ public sealed class AbsurdClient : IAsyncDisposable
         {
             await using var cmd = TaskContext.CreateCommand(con, CurrentTransaction,
                 "SELECT state, result, failure_reason FROM absurd.get_task_result($1, $2)",
-                queueName, taskId);
+                queueName, Guid.Parse(taskId));
 
             await using var reader = await cmd.ExecuteReaderAsync(ct);
             if (!await reader.ReadAsync(ct)) return null;
@@ -314,7 +314,7 @@ public sealed class AbsurdClient : IAsyncDisposable
         {
             await using var cmd = TaskContext.CreateCommand(con, CurrentTransaction,
                 "SELECT absurd.cancel_task($1, $2)",
-                queue, taskId);
+                queue, Guid.Parse(taskId));
             await cmd.ExecuteNonQueryAsync(ct);
         }
         finally
@@ -340,7 +340,7 @@ public sealed class AbsurdClient : IAsyncDisposable
         {
             await using var cmd = TaskContext.CreateCommand(con, CurrentTransaction,
                 "SELECT task_id, run_id, attempt, created FROM absurd.retry_task($1, $2, $3)",
-                queue, taskId, optionsJson);
+                queue, Guid.Parse(taskId), optionsJson);
 
             await using var reader = await cmd.ExecuteReaderAsync(ct);
             if (!await reader.ReadAsync(ct))
@@ -556,7 +556,7 @@ public sealed class AbsurdClient : IAsyncDisposable
                 await registration.Handler(claimed.Params, ctx);
                 await using var completeCmd = TaskContext.CreateCommand(con, null,
                     "SELECT absurd.complete_run($1, $2)",
-                    QueueName, claimed.RunId);
+                    QueueName, Guid.Parse(claimed.RunId));
                 await completeCmd.ExecuteNonQueryAsync(ct);
             }
 
@@ -596,7 +596,7 @@ public sealed class AbsurdClient : IAsyncDisposable
 
                 await using var failCmd = TaskContext.CreateCommand(con, null,
                     "SELECT absurd.fail_run($1, $2, $3)",
-                    QueueName, claimed.RunId, reason);
+                    QueueName, Guid.Parse(claimed.RunId), reason);
                 await failCmd.ExecuteNonQueryAsync();
             }
             catch (Exception failEx)

@@ -8,7 +8,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 
-    <!-- NuGet package metadata (task 1.4) -->
+    <!-- NuGet package metadata -->
     <PackageId>Absurd.Sdk</PackageId>
     <Version>0.1.0</Version>
     <Description>The official .NET SDK for Absurd — a Postgres-native durable workflow system.</Description>
@@ -22,6 +22,11 @@
   <ItemGroup>
     <PackageReference Include="Npgsql" Version="9.*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.*" />
+  </ItemGroup>
+
+  <!-- Examples are reference code only — not compiled into the library. -->
+  <ItemGroup>
+    <Compile Remove="examples/**/*.cs" />
   </ItemGroup>
 
 </Project>
