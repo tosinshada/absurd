@@ -9,8 +9,8 @@ namespace Absurd.Dashboard.Models;
 /// </summary>
 public sealed class TaskSummary
 {
-    [JsonPropertyName("taskId")] public string TaskId { get; init; } = "";
-    [JsonPropertyName("runId")] public string RunId { get; init; } = "";
+    [JsonPropertyName("taskId")] public Guid TaskId { get; init; }
+    [JsonPropertyName("runId")] public Guid RunId { get; init; }
     [JsonPropertyName("queueName")] public string QueueName { get; init; } = "";
     [JsonPropertyName("taskName")] public string TaskName { get; init; } = "";
     [JsonPropertyName("status")] public string Status { get; init; } = "";
@@ -33,8 +33,8 @@ public sealed class TaskSummary
 /// </summary>
 public sealed record TaskDetail
 {
-    [JsonPropertyName("taskId")] public string TaskId { get; init; } = "";
-    [JsonPropertyName("runId")] public string RunId { get; init; } = "";
+    [JsonPropertyName("taskId")] public Guid TaskId { get; init; }
+    [JsonPropertyName("runId")] public Guid RunId { get; init; }
     [JsonPropertyName("queueName")] public string QueueName { get; init; } = "";
     [JsonPropertyName("taskName")] public string TaskName { get; init; } = "";
     [JsonPropertyName("status")] public string Status { get; init; } = "";
@@ -67,7 +67,7 @@ public sealed class CheckpointState
     public JsonElement? State { get; init; }
     [JsonPropertyName("status")] public string Status { get; init; } = "";
     [JsonPropertyName("ownerRunId"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? OwnerRunId { get; init; }
+    public Guid? OwnerRunId { get; init; }
     [JsonPropertyName("expiresAt"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public DateTime? ExpiresAt { get; init; }
     [JsonPropertyName("updatedAt")] public DateTime UpdatedAt { get; init; }
@@ -158,7 +158,7 @@ public sealed class QueueEvent
 /// </summary>
 public sealed class RetryTaskRequest
 {
-    [JsonPropertyName("taskId")] public string TaskId { get; init; } = "";
+    [JsonPropertyName("taskId")] public Guid TaskId { get; init; }
     [JsonPropertyName("queueName")] public string QueueName { get; init; } = "";
     [JsonPropertyName("spawnNewTask")] public bool SpawnNewTask { get; init; }
     [JsonPropertyName("maxAttempts")] public int? MaxAttempts { get; init; }
@@ -170,8 +170,8 @@ public sealed class RetryTaskRequest
 /// </summary>
 public sealed class RetryTaskResponse
 {
-    [JsonPropertyName("taskId")] public string TaskId { get; init; } = "";
-    [JsonPropertyName("runId")] public string RunId { get; init; } = "";
+    [JsonPropertyName("taskId")] public Guid TaskId { get; init; }
+    [JsonPropertyName("runId")] public Guid RunId { get; init; }
     [JsonPropertyName("attempt")] public int Attempt { get; init; }
     [JsonPropertyName("created")] public bool Created { get; init; }
     [JsonPropertyName("queueName")] public string QueueName { get; init; } = "";

@@ -382,7 +382,7 @@ internal sealed class DashboardHandler
         var (statusFilter, statusValid) = QueueHelpers.NormalizeTaskStatusFilter(q["status"]);
         var queueFilter = q["queue"].ToString().Trim();
         var taskNameFilter = q["taskName"].ToString().Trim();
-        var taskIdFilter = q["taskId"].ToString().Trim();
+        var taskIdStr = q["taskId"].ToString().Trim();
         var afterTime = QueueHelpers.ParseOptionalTime(q["after"].ToString().Trim());
         var beforeTime = QueueHelpers.ParseOptionalTime(q["before"].ToString().Trim());
 
@@ -404,11 +404,15 @@ internal sealed class DashboardHandler
             return;
         }
 
-        // Validate taskId is a valid UUID
-        if (!string.IsNullOrEmpty(taskIdFilter) && !IsValidUuid(taskIdFilter, out taskIdFilter))
+        Guid? taskIdFilter = null;
+        if (!string.IsNullOrEmpty(taskIdStr))
         {
-            await ResponseHelpers.WriteJsonAsync(context.Response, 200, EmptyTaskListResponse(page, perPage, queueNames));
-            return;
+            if (!Guid.TryParse(taskIdStr, out var parsedTaskId))
+            {
+                await ResponseHelpers.WriteJsonAsync(context.Response, 200, EmptyTaskListResponse(page, perPage, queueNames));
+                return;
+            }
+            taskIdFilter = parsedTaskId;
         }
 
         var selectedQueues = queueNames;
@@ -466,13 +470,13 @@ internal sealed class DashboardHandler
         {
             merged = merged
                 .Where(t => QueueHelpers.MatchesTaskSearch(
-                    t.TaskId, t.RunId, t.QueueName, t.TaskName,
+                    t.TaskId.ToString("D"), t.RunId.ToString("D"), t.QueueName, t.TaskName,
                     t.Params.HasValue ? t.Params.Value.GetRawText() : null,
                     search))
                 .ToList();
         }
 
-        merged.Sort((a, b) => string.Compare(b.RunId, a.RunId, StringComparison.Ordinal));
+        merged.Sort((a, b) => b.RunId.CompareTo(a.RunId));
 
         int total = (isSearch || !hasWindowTruncation) ? merged.Count : -1;
 
@@ -499,7 +503,7 @@ internal sealed class DashboardHandler
         string queueName,
         string? statusFilter,
         string taskNameFilter,
-        string taskIdFilter,
+        Guid? taskIdFilter,
         int limit,
         bool includeParams,
         DateTime? afterTime,
@@ -534,9 +538,9 @@ internal sealed class DashboardHandler
             paramValues.Add(taskNameFilter);
             clauses.Add($"t.task_name = ${paramValues.Count}");
         }
-        if (!string.IsNullOrEmpty(taskIdFilter))
+        if (taskIdFilter.HasValue)
         {
-            paramValues.Add(taskIdFilter);
+            paramValues.Add(taskIdFilter.Value);
             clauses.Add($"t.task_id = ${paramValues.Count}");
         }
         if (afterTime.HasValue)
@@ -590,10 +594,10 @@ internal sealed class DashboardHandler
         cts.CancelAfter(TimeSpan.FromSeconds(5));
         var ct = cts.Token;
 
-        var runId = context.Request.Path.Value!.Replace("/api/tasks/", "", StringComparison.OrdinalIgnoreCase).TrimStart('/');
-        if (string.IsNullOrEmpty(runId))
+        var runIdStr = context.Request.Path.Value!.Replace("/api/tasks/", "", StringComparison.OrdinalIgnoreCase).TrimStart('/');
+        if (!Guid.TryParse(runIdStr, out var runId))
         {
-            await ResponseHelpers.WriteErrorAsync(context.Response, 400, "run ID required");
+            await ResponseHelpers.WriteErrorAsync(context.Response, 400, "run ID must be a valid UUID");
             return;
         }
 
@@ -630,7 +634,7 @@ internal sealed class DashboardHandler
             """;
 
         TaskDetail? detail;
-        string? taskId;
+        Guid taskId = default;
         try
         {
             await using var conn = await _dataSource.OpenConnectionAsync(ct);
@@ -645,7 +649,7 @@ internal sealed class DashboardHandler
                 return;
             }
 
-            taskId = r.GetString(0);
+            taskId = r.GetGuid(0);
             detail = ReadTaskDetail(r);
 
             await r.CloseAsync();
@@ -670,7 +674,7 @@ internal sealed class DashboardHandler
                     StepName = cpReader.GetString(0),
                     State = QueueHelpers.ParseJsonElement(cpReader.IsDBNull(1) ? null : cpReader.GetString(1)),
                     Status = cpReader.GetString(2),
-                    OwnerRunId = cpReader.IsDBNull(3) ? null : cpReader.GetString(3),
+                    OwnerRunId = cpReader.IsDBNull(3) ? null : (Guid?)cpReader.GetGuid(3),
                     ExpiresAt = cpReader.IsDBNull(4) ? null : cpReader.GetDateTime(4).ToUniversalTime(),
                     UpdatedAt = cpReader.GetDateTime(5).ToUniversalTime(),
                 });
@@ -756,7 +760,7 @@ internal sealed class DashboardHandler
             return;
         }
 
-        if (request == null || string.IsNullOrWhiteSpace(request.TaskId))
+        if (request == null || request.TaskId == Guid.Empty)
         {
             await ResponseHelpers.WriteErrorAsync(context.Response, 400, "taskId is required");
             return;
@@ -764,11 +768,6 @@ internal sealed class DashboardHandler
         if (string.IsNullOrWhiteSpace(request.QueueName))
         {
             await ResponseHelpers.WriteErrorAsync(context.Response, 400, "queueName is required");
-            return;
-        }
-        if (!IsValidUuid(request.TaskId, out var taskId))
-        {
-            await ResponseHelpers.WriteErrorAsync(context.Response, 400, "taskId must be a valid UUID");
             return;
         }
         if (request.MaxAttempts.HasValue && request.MaxAttempts < 1)
@@ -813,7 +812,7 @@ internal sealed class DashboardHandler
         else if (request.ExtraAttempts.HasValue)
         {
             int currentAttempts;
-            try { currentAttempts = await GetTaskAttemptsAsync(request.QueueName, taskId, ct); }
+            try { currentAttempts = await GetTaskAttemptsAsync(request.QueueName, request.TaskId, ct); }
             catch (InvalidOperationException)
             {
                 await ResponseHelpers.WriteErrorAsync(context.Response, 404, "task not found in queue");
@@ -830,7 +829,7 @@ internal sealed class DashboardHandler
             await using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT task_id, run_id, attempt, created FROM absurd.retry_task($1, $2, $3::jsonb)";
             cmd.Parameters.AddWithValue(request.QueueName);
-            cmd.Parameters.AddWithValue(taskId);
+            cmd.Parameters.AddWithValue(request.TaskId);
             cmd.Parameters.AddWithValue(optionsJson);
 
             await using var reader = await cmd.ExecuteReaderAsync(ct);
@@ -842,8 +841,8 @@ internal sealed class DashboardHandler
 
             var response = new RetryTaskResponse
             {
-                TaskId = reader.GetString(0),
-                RunId = reader.GetString(1),
+                TaskId = reader.GetGuid(0),
+                RunId = reader.GetGuid(1),
                 Attempt = reader.GetInt32(2),
                 Created = reader.GetBoolean(3),
                 QueueName = request.QueueName,
@@ -1017,7 +1016,7 @@ internal sealed class DashboardHandler
         return result != null && result != DBNull.Value;
     }
 
-    private async Task<string?> FindQueueForRunAsync(string runId, CancellationToken ct)
+    private async Task<string?> FindQueueForRunAsync(Guid runId, CancellationToken ct)
     {
         var queueNames = await ListQueueNamesAsync(ct);
         foreach (var queueName in queueNames)
@@ -1035,7 +1034,7 @@ internal sealed class DashboardHandler
         return null;
     }
 
-    private async Task<int> GetTaskAttemptsAsync(string queueName, string taskId, CancellationToken ct)
+    private async Task<int> GetTaskAttemptsAsync(string queueName, Guid taskId, CancellationToken ct)
     {
         var ttable = QueueHelpers.QueueTableIdentifier("t", queueName);
         await using var conn = await _dataSource.OpenConnectionAsync(ct);
@@ -1073,8 +1072,8 @@ internal sealed class DashboardHandler
         //          created_at, updated_at, completed_at, claimed_by[, params]
         return new TaskSummary
         {
-            TaskId = reader.GetString(0),
-            RunId = reader.GetString(1),
+            TaskId = reader.GetGuid(0),
+            RunId = reader.GetGuid(1),
             QueueName = reader.GetString(2),
             TaskName = reader.GetString(3),
             Status = reader.GetString(4),
@@ -1097,8 +1096,8 @@ internal sealed class DashboardHandler
         //          created_at, updated_at, completed_at, claimed_by
         return new TaskDetail
         {
-            TaskId = reader.GetString(0),
-            RunId = reader.GetString(1),
+            TaskId = reader.GetGuid(0),
+            RunId = reader.GetGuid(1),
             QueueName = reader.GetString(2),
             TaskName = reader.GetString(3),
             Status = reader.GetString(4),
@@ -1132,15 +1131,4 @@ internal sealed class DashboardHandler
             AvailableTaskNames = [],
         };
 
-    private static bool IsValidUuid(string value, out string normalized)
-    {
-        if (Guid.TryParse(value, out var guid))
-        {
-            normalized = guid.ToString("D"); // lowercase hyphenated
-            return true;
-        }
-
-        normalized = value;
-        return false;
-    }
 }

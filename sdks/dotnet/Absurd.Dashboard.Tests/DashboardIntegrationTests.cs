@@ -125,11 +125,11 @@ public sealed class DashboardIntegrationTests(DashboardTestFixture fixture)
     }
 
     [Fact]
-    public async Task ApiTaskDetail_InvalidId_Returns404()
+    public async Task ApiTaskDetail_InvalidId_Returns400()
     {
         var response = await Client.GetAsync("/habitat/api/tasks/not-a-uuid");
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     // ── /api/config ───────────────────────────────────────────────────────────
