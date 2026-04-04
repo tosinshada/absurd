@@ -1,4 +1,4 @@
-.PHONY: format test test-core test-typescript test-python build-absurdctl build-absurdctl-pypi docs serve-docs
+.PHONY: format test test-core test-typescript test-python build-absurdctl build-absurdctl-pypi docs serve-docs dashboard-ui dotnet-build dotnet-test
 
 # Format all code
 format:
@@ -44,12 +44,20 @@ test-python:
 	@echo "Running Python SDK tests"
 	@cd sdks/python; uv run pytest
 
-# Build .NET SDK
-dotnet-build:
+# Build Absurd.Dashboard SolidJS frontend and copy output to the .NET wwwroot/
+# This must be run before `dotnet build` or `dotnet pack`.
+dashboard-ui:
+	@echo "Building Absurd.Dashboard UI"
+	@cd habitat/ui && npm install && npm run build
+	@mkdir -p sdks/dotnet/Absurd.Dashboard/wwwroot
+	@cp -r habitat/ui/dist/. sdks/dotnet/Absurd.Dashboard/wwwroot/
+
+# Build .NET SDK (builds the SolidJS dashboard UI first to populate wwwroot/)
+dotnet-build: dashboard-ui
 	@echo "Building .NET SDK"
 	@cd sdks/dotnet && dotnet build
 
 # Run .NET SDK tests
-dotnet-test:
+dotnet-test: dashboard-ui
 	@echo "Running .NET SDK tests"
 	@cd sdks/dotnet && dotnet test

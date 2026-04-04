@@ -1,31 +1,31 @@
 ## 1. Project Setup
 
-- [ ] 1.1 Create `sdks/dotnet/Absurd.Dashboard/Absurd.Dashboard.csproj` targeting `net8.0` with `Microsoft.NET.Sdk.Web`, `Npgsql`, and `Microsoft.AspNetCore.StaticFiles` dependencies
-- [ ] 1.2 Add `Absurd.Dashboard` project to `Absurd.Sdk.sln`
-- [ ] 1.3 Add `sdks/dotnet/Absurd.Dashboard/wwwroot/` to `.gitignore`
-- [ ] 1.4 Configure `<EmbeddedResource Include="wwwroot/**" />` in the csproj so all frontend files are embedded in the assembly
-- [ ] 1.5 Add a build guard that fails with a clear message if `wwwroot/` is empty at build time
+- [x] 1.1 Create `sdks/dotnet/Absurd.Dashboard/Absurd.Dashboard.csproj` targeting `net8.0` with `Microsoft.NET.Sdk.Web`, `Npgsql`, and `Microsoft.AspNetCore.StaticFiles` dependencies
+- [x] 1.2 Add `Absurd.Dashboard` project to `Absurd.Sdk.sln`
+- [x] 1.3 Add `sdks/dotnet/Absurd.Dashboard/wwwroot/` to `.gitignore`
+- [x] 1.4 Configure `<EmbeddedResource Include="wwwroot/**" />` in the csproj so all frontend files are embedded in the assembly
+- [x] 1.5 Add a build guard that fails with a clear message if `wwwroot/` is empty at build time
 
 ## 2. Frontend Build Pipeline
 
-- [ ] 2.1 Add a `Makefile` target that runs the SolidJS build (`npm run build` in `habitat/ui`) and copies `habitat/ui/dist/**` to `sdks/dotnet/Absurd.Dashboard/wwwroot/`
-- [ ] 2.2 Update the root `Makefile` (or CI pipeline) to run the frontend copy step before `dotnet build`
-- [ ] 2.3 Verify the embedded resources are accessible via `Assembly.GetManifestResourceNames()` in a manual smoke test
+- [x] 2.1 Add a `Makefile` target that runs the SolidJS build (`npm run build` in `habitat/ui`) and copies `habitat/ui/dist/**` to `sdks/dotnet/Absurd.Dashboard/wwwroot/`
+- [x] 2.2 Update the root `Makefile` (or CI pipeline) to run the frontend copy step before `dotnet build`
+- [x] 2.3 Verify the embedded resources are accessible via `Assembly.GetManifestResourceNames()` in a manual smoke test
 
 ## 3. Options and DI Registration
 
-- [ ] 3.1 Create `HabitatOptions` class with `ConnectionString` (required) and `BasePath` (optional) properties
-- [ ] 3.2 Implement `AddAbsurdDashboard(Action<HabitatOptions>)` extension on `IServiceCollection` that registers `NpgsqlDataSource` and all required services
-- [ ] 3.3 Implement `AddAbsurdDashboard(IConfiguration)` overload that binds options from a configuration section
-- [ ] 3.4 Add fail-fast validation: throw `InvalidOperationException` at startup if `ConnectionString` is missing
+- [x] 3.1 Create `HabitatOptions` class with `ConnectionString` (required) and `BasePath` (optional) properties
+- [x] 3.2 Implement `AddAbsurdDashboard(Action<HabitatOptions>)` extension on `IServiceCollection` that registers `NpgsqlDataSource` and all required services
+- [x] 3.3 Implement `AddAbsurdDashboard(IConfiguration)` overload that binds options from a configuration section
+- [x] 3.4 Add fail-fast validation: throw `InvalidOperationException` at startup if `ConnectionString` is missing
 
 ## 4. Embedded Static File Serving
 
-- [ ] 4.1 Implement `EmbeddedFileProvider`-backed static file serving for `/_static/**` within the mounted branch, loading assets from assembly manifest resources
-- [ ] 4.2 Implement correct `Content-Type` mapping for `.js`, `.css`, `.woff2`, `.png`, `.svg`, `.json` extensions
-- [ ] 4.3 Implement `index.html` serving with `<base href>` injection and `window.__HABITAT_RUNTIME_CONFIG__` script injection, mirroring the Go `renderIndexHTML` logic
-- [ ] 4.4 Implement `X-Forwarded-Prefix` / `X-Forwarded-Path` / `X-Script-Name` header extraction for reverse-proxy base-path override (port from Go `extractForwardedPrefix`)
-- [ ] 4.5 Implement SPA fallback: any non-API, non-static path within the branch returns the injected `index.html`
+- [x] 4.1 Implement `EmbeddedFileProvider`-backed static file serving for `/_static/**` within the mounted branch, loading assets from assembly manifest resources
+- [x] 4.2 Implement correct `Content-Type` mapping for `.js`, `.css`, `.woff2`, `.png`, `.svg`, `.json` extensions
+- [x] 4.3 Implement `index.html` serving with `<base href>` injection and `window.__HABITAT_RUNTIME_CONFIG__` script injection, mirroring the Go `renderIndexHTML` logic
+- [x] 4.4 Implement `X-Forwarded-Prefix` / `X-Forwarded-Path` / `X-Script-Name` header extraction for reverse-proxy base-path override (port from Go `extractForwardedPrefix`)
+- [x] 4.5 Implement SPA fallback: any non-API, non-static path within the branch returns the injected `index.html`
 
 ## 5. MapAbsurdDashboard Routing
 

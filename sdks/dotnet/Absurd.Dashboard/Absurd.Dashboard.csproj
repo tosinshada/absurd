@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>Absurd.Dashboard</RootNamespace>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>latest</LangVersion>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<IsPackable>true</IsPackable>
+
+		<!-- NuGet package metadata -->
+		<PackageId>Absurd.Dashboard</PackageId>
+		<Version>0.1.0</Version>
+		<Description>Habitat dashboard middleware for ASP.NET — embed Absurd monitoring in any web application.</Description>
+		<Authors>Absurd Contributors</Authors>
+		<RepositoryUrl>https://github.com/absurd-dev/absurd</RepositoryUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageTags>durable;workflow;postgres;dashboard;monitoring</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- Grants access to all ASP.NET Core APIs (routing, static files, embedded file provider, etc.) -->
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Npgsql" Version="9.*" />
+	</ItemGroup>
+
+	<!-- Embed all frontend assets so the NuGet package is fully self-contained -->
+	<ItemGroup>
+		<EmbeddedResource Include="wwwroot\**" />
+	</ItemGroup>
+
+	<!--
+		Build guard: fail loudly if frontend assets haven't been built yet.
+		Run `make dashboard-ui` first to build the SolidJS bundle and copy it to wwwroot/.
+	-->
+	<Target Name="CheckWwwrootNotEmpty" BeforeTargets="PrepareForBuild">
+		<ItemGroup>
+			<_WwwrootFiles Include="$(MSBuildProjectDirectory)\wwwroot\**\*" />
+		</ItemGroup>
+		<Error
+			Condition="'@(_WwwrootFiles)' == ''"
+			Text="Absurd.Dashboard: wwwroot/ is empty or missing. Run 'make dashboard-ui' to build the SolidJS frontend before building this project." />
+	</Target>
+
+</Project>
