@@ -674,7 +674,7 @@ internal sealed class DashboardHandler
                     StepName = cpReader.GetString(0),
                     State = QueueHelpers.ParseJsonElement(cpReader.IsDBNull(1) ? null : cpReader.GetString(1)),
                     Status = cpReader.GetString(2),
-                    OwnerRunId = cpReader.IsDBNull(3) ? null : (Guid?)cpReader.GetGuid(3),
+                    OwnerRunId = cpReader.IsDBNull(3) ? null : cpReader.GetGuid(3),
                     ExpiresAt = cpReader.IsDBNull(4) ? null : cpReader.GetDateTime(4).ToUniversalTime(),
                     UpdatedAt = cpReader.GetDateTime(5).ToUniversalTime(),
                 });
